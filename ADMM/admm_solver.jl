@@ -1,5 +1,5 @@
 using LinearAlgebra
-include("linear_solver.jl")
+include("linear_solver/linear_solver.jl")
 
 function admm_solver(P, q, A, l, u, param)
   # Deploy parameters
@@ -10,15 +10,17 @@ function admm_solver(P, q, A, l, u, param)
 
   # Define initial guess
   x = zeros(nx)
+  x_tilde = zeros(nx)
   z = zeros(ny)
   y = zeros(ny)
+  v = zeros(ny)
 
   for i = 1:iter_max
     # Solve linear system
-    sol = linear_solver([P + sigma * Matrix(1.0I, nx, nx) transpose(A); A -1.0 / rho *  Matrix(1.0I, ny, ny)], [sigma * x - q; z - 1.0 / rho * y])
+    sol = linear_solver([P + sigma * Matrix(1.0I, nx, nx) transpose(A); A -1.0 / rho *  Matrix(1.0I, ny, ny)], [sigma * x - q; z - 1.0 / rho * y], [x_tilde;v])
     x_tilde = sol[1:nx]
     v = sol[(nx + 1):(nx + ny)]
-    
+
     # Calculate z_tilde and x
     z_tilde = z + 1.0 / rho * (v - y)
     x = alpha * x_tilde + (1 - alpha) * x
@@ -32,13 +34,13 @@ function admm_solver(P, q, A, l, u, param)
         z_next[i] = u[i]
       end
     end
-    
+
     # Update y and z
     y = y + rho * (alpha * z_tilde + (1 - alpha) * z - z_next)
     z = z_next
 
     # Print
-    println("i = ", i, " : x = ", x)
+    println("i = ", i, " : x = ", x, ", J = ", 0.5 * transpose(x) * A * x + transpose(q) * x)
   end
   return x
 end
