@@ -25,7 +25,7 @@ function pcg(A, b, x0)
 
     # Check convergence
     if dot(r, r) < epsilon
-      println("[pcg] converged! ||r|| = ", dot(r, r), ", iter = ", i)
+      println("--- [pcg] Converged! ||r|| = ", dot(r, r), ", iter = ", i)
       break
     end
   end

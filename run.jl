@@ -15,9 +15,9 @@ u = [200000; 200000; 200000]
 rho = 0.1
 sigma = 0.1
 alpha = 0.5
-iter_max = 10
+iter_max = 100
 param = [rho, sigma, alpha, iter_max]
 
-x_opt = admm_solver(P, q, A, l, u, param)
+output = admm_solver(P, q, A, l, u, param)
 
-println(x_opt)
+println(output.solution)

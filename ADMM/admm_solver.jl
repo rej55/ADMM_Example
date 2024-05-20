@@ -1,4 +1,5 @@
 using LinearAlgebra
+include("admm_output.jl")
 include("linear_solver/linear_solver.jl")
 
 function admm_solver(P, q, A, l, u, param)
@@ -15,7 +16,10 @@ function admm_solver(P, q, A, l, u, param)
   y = zeros(ny)
   v = zeros(ny)
 
-  for i = 1:iter_max
+  objective_values = 0.5 * transpose(x) * A * x + transpose(q) * x
+  iter = UInt(iter_max)
+
+  for i = UInt(1):UInt(iter_max)
     # Solve linear system
     sol = linear_solver([P + sigma * Matrix(1.0I, nx, nx) transpose(A); A -1.0 / rho *  Matrix(1.0I, ny, ny)], [sigma * x - q; z - 1.0 / rho * y], [x_tilde;v])
     x_tilde = sol[1:nx]
@@ -39,8 +43,16 @@ function admm_solver(P, q, A, l, u, param)
     y = y + rho * (alpha * z_tilde + (1 - alpha) * z - z_next)
     z = z_next
 
-    # Print
-    println("i = ", i, " : x = ", x, ", J = ", 0.5 * transpose(x) * A * x + transpose(q) * x)
+    # Calculate objective value
+    objective_values = [objective_values; 0.5 * transpose(x) * A * x + transpose(q) * x]
+
+    # Check convergence
+    if abs(objective_values[i + 1] - objective_values[i]) < 0.0001
+      # Print
+      println("[ADMM] Converged! i = ", i, " : x = ", x, ", J = ", objective_values[i + 1])
+      iter = i
+      break
+    end
   end
-  return x
+  return ADMMOutput(x, objective_values, iter)
 end
