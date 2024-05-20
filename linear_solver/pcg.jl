@@ -1,11 +1,9 @@
 using LinearAlgebra
 
-include("precond.jl")
-
 # Preconditioned conjugate gradient
-function pcg(A, b, x0)
+function pcg(A, b, x0, precond)
   # Set convergence criteria
-  epsilon = 0.000001
+  epsilon = 0.0001
 
   # Set initial guess
   x = x0
@@ -13,7 +11,7 @@ function pcg(A, b, x0)
   p = precond(A, r)
   z = p
 
-  for i = 1:100
+  for i = 1:1000
     alpha = dot(r, z) / dot(A * p, p)
     x = x + alpha * p
     rn = r - alpha * A * p
@@ -24,8 +22,8 @@ function pcg(A, b, x0)
     z = zn
 
     # Check convergence
-    if dot(r, r) < epsilon
-      println("--- [pcg] Converged! ||r|| = ", dot(r, r), ", iter = ", i)
+    if norm(r) < epsilon
+      # println("--- [pcg] Converged! ||r|| = ", dot(r, r), ", iter = ", i)
       break
     end
   end

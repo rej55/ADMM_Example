@@ -1,6 +1,6 @@
 using LinearAlgebra
 
-function precond(A, b)
+function diagonal_scaling(A, b)
   # Diagonal scaling
   x = b ./ diag(A)
 
